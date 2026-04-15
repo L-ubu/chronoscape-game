@@ -1,0 +1,5 @@
+node_modules/
+.env
+data/sessions/
+data/characters/
+.DS_Store
