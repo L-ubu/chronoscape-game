@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chronoscape — The World of Aethermere</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Join Screen -->
+  <div id="join-screen" class="screen">
+    <div class="join-box">
+      <h1 class="glitch-title">CHRONOSCAPE</h1>
+      <p class="subtitle">The World of Aethermere</p>
+      <div class="join-form">
+        <input type="text" id="player-name" placeholder="Enter your name..." autofocus>
+        <button id="join-btn">CONNECT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen hidden">
+    <!-- Combat Tracker (hidden until combat starts) -->
+    <div id="combat-bar" class="combat-bar hidden">
+      <div class="combat-header">COMBAT — Round <span id="combat-round">1</span></div>
+      <div id="combat-list" class="combat-list"></div>
+    </div>
+
+    <div class="game-layout">
+      <!-- Chat Panel (center) -->
+      <div class="chat-panel">
+        <div id="chat-log" class="chat-log"></div>
+        <div class="input-bar">
+          <input type="text" id="chat-input" placeholder="Type an action, or /command..." autofocus>
+          <button id="send-btn">SEND</button>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-btn" data-cmd="/roll d20">d20</button>
+          <button class="quick-btn" data-cmd="/roll 2d6">2d6</button>
+          <button class="quick-btn" data-cmd="/roll d20 advantage">Adv</button>
+          <button class="quick-btn" data-cmd="/sheet">Sheet</button>
+          <button class="quick-btn" data-cmd="/inventory">Inv</button>
+          <button class="quick-btn" data-cmd="/status">Status</button>
+          <button class="quick-btn" data-cmd="/map">Map</button>
+          <button class="quick-btn" data-cmd="/combat">Combat</button>
+          <button class="quick-btn" data-cmd="/help">Help</button>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-tabs">
+          <button class="tab-btn active" data-tab="character">Character</button>
+          <button class="tab-btn" data-tab="party">Party</button>
+        </div>
+
+        <!-- Character Tab -->
+        <div id="tab-character" class="tab-content active">
+          <div id="char-sheet" class="char-sheet">
+            <p class="dim">No character loaded. Create one to get started!</p>
+          </div>
+        </div>
+
+        <!-- Party Tab -->
+        <div id="tab-party" class="tab-content">
+          <div id="party-list" class="party-list">
+            <p class="dim">No other players connected.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Character Creation Modal -->
+  <div id="char-creation-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>CHARACTER CREATION</h2>
+      <div id="creation-chat" class="creation-chat"></div>
+      <div class="creation-input-bar">
+        <input type="text" id="creation-input" placeholder="Chat with the AI to build your character...">
+        <button id="creation-send-btn">SEND</button>
+      </div>
+      <button id="manual-create-btn" class="secondary-btn">Manual Creation Instead</button>
+    </div>
+  </div>
+
+  <!-- Manual Creation Modal -->
+  <div id="manual-creation-modal" class="modal hidden">
+    <div class="modal-content modal-wide">
+      <h2>MANUAL CHARACTER CREATION</h2>
+
+      <!-- Step 1: Identity -->
+      <div class="mc-section">
+        <div class="mc-step">Step 1: Identity</div>
+        <div class="form-row">
+          <label>Name <input type="text" id="mc-name" placeholder="Character name"></label>
+          <label>Background <input type="text" id="mc-background" placeholder="Ex-Axiom scientist, Street hacker..."></label>
+        </div>
+      </div>
+
+      <!-- Step 2: Race -->
+      <div class="mc-section">
+        <div class="mc-step">Step 2: Race</div>
+        <select id="mc-race"></select>
+        <div id="mc-race-desc" class="mc-preview-desc"></div>
+      </div>
+
+      <!-- Step 3: Class -->
+      <div class="mc-section">
+        <div class="mc-step">Step 3: Class</div>
+        <select id="mc-class"></select>
+        <div id="mc-class-preview" class="mc-class-preview"></div>
+      </div>
+
+      <!-- Step 4: Region & Alignment -->
+      <div class="mc-section">
+        <div class="mc-step">Step 4: Region & Alignment</div>
+        <div class="form-row">
+          <div>
+            <select id="mc-region"></select>
+            <div id="mc-region-desc" class="mc-preview-desc"></div>
+          </div>
+          <div>
+            <select id="mc-alignment"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Stats -->
+      <div class="mc-section">
+        <div class="mc-step">Step 5: Ability Scores <span class="dim">(4d6 keep highest 3)</span></div>
+        <div id="mc-stats" class="stats-display"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="mc-roll-stats" class="secondary-btn">Re-roll Stats</button>
+        <button id="mc-create-btn">CREATE CHARACTER</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
