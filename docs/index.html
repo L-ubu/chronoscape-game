@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>chronoscape: an AI-powered D&amp;D game engine</title>
+    <meta
+      name="description"
+      content="A multiplayer D&D 5e game engine with an AI Dungeon Master, built for the Chronoscape: World of Aethermere campaign — cyberpunk-fantasy where draconic magic meets bleeding-edge technology."
+    />
+    <meta property="og:title" content="chronoscape: an AI-powered D&amp;D game engine" />
+    <meta
+      property="og:description"
+      content="AI Dungeon Master with mechanical tags, real-time multiplayer via Socket.IO, web + terminal clients, Obsidian vault integration, and full D&D 5e mechanics."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://l-ubu.github.io/chronoscape-game/" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>"
+    />
+    <style>
+      :root {
+        --bg: #0a0c10;
+        --bg-soft: #11151c;
+        --panel: #151a23;
+        --line: #232a36;
+        --text: #e6edf3;
+        --muted: #8b98a9;
+        --dim: #5c6773;
+        --accent: #8b5cf6;
+        --accent-dim: #7c3aed;
+        --green: #4ade80;
+        --red: #f87171;
+        --amber: #fbbf24;
+        --magenta: #e879f9;
+        --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 17px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(60rem 40rem at 50% -10rem, rgba(139, 92, 246, 0.1), transparent 70%),
+          linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 4.5rem,
+          linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 4.5rem 100%;
+        opacity: 0.35;
+        mask-image: radial-gradient(70rem 50rem at 50% 0, #000 30%, transparent 75%);
+      }
+      .wrap { position: relative; max-width: 60rem; margin: 0 auto; padding: 0 1.5rem; }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      header { padding: 5.5rem 0 3.5rem; text-align: center; }
+      pre.logo {
+        font-family: var(--mono);
+        font-size: clamp(0.3rem, 1.25vw, 0.68rem);
+        line-height: 1.25;
+        color: var(--accent);
+        display: inline-block;
+        text-align: left;
+        margin: 0 auto 2rem;
+        overflow: hidden;
+        text-shadow: 0 0 1.5rem rgba(139, 92, 246, 0.35);
+      }
+      h1 { font-size: clamp(1.75rem, 4.5vw, 2.6rem); line-height: 1.2; margin: 0 0 0.9rem; letter-spacing: -0.02em; }
+      .tagline { color: var(--muted); font-size: 1.12rem; max-width: 38rem; margin: 0 auto 2.25rem; }
+      .badges { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.25rem; }
+      .badge {
+        font-family: var(--mono); font-size: 0.72rem; padding: 0.28rem 0.6rem;
+        border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--bg-soft);
+      }
+      .badge b { color: var(--accent); font-weight: 600; }
+      .install {
+        display: flex; align-items: stretch; max-width: 34rem; margin: 0 auto 1rem;
+        border: 1px solid var(--line); border-radius: 0.6rem; background: var(--bg-soft); overflow: hidden;
+      }
+      .install code {
+        font-family: var(--mono); font-size: 0.82rem; padding: 0.85rem 1rem; flex: 1;
+        text-align: left; color: var(--text); white-space: nowrap; overflow-x: auto;
+      }
+      .install code .p { color: var(--accent); user-select: none; }
+      .install button {
+        font-family: var(--sans); font-size: 0.78rem; font-weight: 600; padding: 0 1.05rem;
+        border: 0; border-left: 1px solid var(--line); background: var(--panel); color: var(--muted);
+        cursor: pointer; transition: color 0.15s, background 0.15s;
+      }
+      .install button:hover { color: var(--accent); background: #1a212c; }
+      .install button.done { color: var(--accent); }
+      .hero-links { font-size: 0.9rem; color: var(--dim); }
+      .hero-links a { margin: 0 0.55rem; }
+      section { padding: 3.25rem 0; }
+      h2 { font-size: 1.35rem; margin: 0 0 0.5rem; letter-spacing: -0.01em; }
+      h2 .n { font-family: var(--mono); color: var(--accent); font-size: 0.85rem; margin-right: 0.55rem; }
+      .lede { color: var(--muted); margin: 0 0 1.75rem; max-width: 42rem; }
+      .terminal {
+        border: 1px solid var(--line); border-radius: 0.7rem; background: #080a0e;
+        overflow: hidden; box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.5);
+      }
+      .tbar { display: flex; align-items: center; gap: 0.45rem; padding: 0.7rem 0.95rem; background: var(--panel); border-bottom: 1px solid var(--line); }
+      .dot { width: 0.68rem; height: 0.68rem; border-radius: 50%; background: #2c3441; }
+      .tbar span { margin-left: auto; font-family: var(--mono); font-size: 0.7rem; color: var(--dim); }
+      .terminal pre { font-family: var(--mono); font-size: 0.8rem; line-height: 1.75; margin: 0; padding: 1.15rem; overflow-x: auto; white-space: pre; }
+      .g { color: var(--green); } .r { color: var(--red); } .a { color: var(--amber); }
+      .c { color: var(--accent); } .d { color: var(--dim); } .m { color: var(--muted); }
+      .mg { color: var(--magenta); } .b { font-weight: 700; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr)); gap: 1rem; }
+      .card {
+        border: 1px solid var(--line); border-radius: 0.7rem;
+        background: linear-gradient(180deg, var(--bg-soft), rgba(17, 21, 28, 0.35));
+        padding: 1.35rem; transition: border-color 0.18s, transform 0.18s;
+      }
+      .card:hover { border-color: #33405280; transform: translateY(-2px); }
+      .card h3 { font-size: 0.94rem; margin: 0 0 0.5rem; display: flex; align-items: baseline; gap: 0.5rem; }
+      .card h3 i { font-family: var(--mono); font-style: normal; color: var(--accent); font-size: 0.85rem; }
+      .card p { margin: 0; font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+      th, td { text-align: left; padding: 0.7rem 0.5rem; border-bottom: 1px solid var(--line); }
+      th { color: var(--dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+      td code { font-family: var(--mono); font-size: 0.84rem; color: var(--accent); white-space: nowrap; }
+      td:last-child { color: var(--muted); }
+      .reason { border-left: 2px solid var(--line); padding: 0 0 0 1.15rem; margin-bottom: 1.6rem; }
+      .reason:hover { border-left-color: var(--accent-dim); }
+      .reason h3 { font-size: 0.98rem; margin: 0 0 0.35rem; }
+      .reason p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+      .reason code, .lede code, .card p code {
+        font-family: var(--mono); font-size: 0.85em; background: var(--panel);
+        padding: 0.1rem 0.32rem; border-radius: 0.25rem; color: var(--text);
+      }
+      footer { padding: 3rem 0 4rem; text-align: center; color: var(--dim); font-size: 0.86rem; border-top: 1px solid var(--line); margin-top: 2rem; }
+      @media (max-width: 40rem) {
+        body { font-size: 16px; }
+        header { padding: 3.5rem 0 2.5rem; }
+        .terminal pre { font-size: 0.68rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <pre class="logo" aria-label="chronoscape">
+ ██████╗██╗  ██╗██████╗  ██████╗ ███╗   ██╗ ██████╗ ███████╗ ██████╗ █████╗ ██████╗ ███████╗
+██╔════╝██║  ██║██╔══██╗██╔═══██╗████╗  ██║██╔═══██╗██╔════╝██╔════╝██╔══██╗██╔══██╗██╔════╝
+██║     ███████║██████╔╝██║   ██║██╔██╗ ██║██║   ██║███████╗██║     ███████║██████╔╝█████╗
+██║     ██╔══██║██╔══██╗██║   ██║██║╚██╗██║██║   ██║╚════██║██║     ██╔══██║██╔═══╝ ██╔══╝
+╚██████╗██║  ██║██║  ██║╚██████╔╝██║ ╚████║╚██████╔╝███████║╚██████╗██║  ██║██║     ███████╗
+ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝     ╚══════╝</pre>
+
+        <h1>A D&amp;D engine where the DM is an AI.</h1>
+        <p class="tagline">
+          Multiplayer 5e with an AI Dungeon Master, set in the Chronoscape: World of Aethermere —
+          a cyberpunk-fantasy realm where draconic magic meets bleeding-edge technology.
+        </p>
+
+        <div class="badges">
+          <span class="badge">DM <b>AI, streaming</b></span>
+          <span class="badge">multiplayer <b>Socket.IO</b></span>
+          <span class="badge">clients <b>web + terminal</b></span>
+          <span class="badge">lore <b>Obsidian vault</b></span>
+        </div>
+
+        <div class="install">
+          <code id="cmd"><span class="p">$ </span>git clone https://github.com/L-ubu/chronoscape-game.git &amp;&amp; cd chronoscape-game &amp;&amp; npm install &amp;&amp; npm start</code>
+          <button id="copy" type="button">Copy</button>
+        </div>
+
+        <p class="hero-links">
+          <a href="https://github.com/L-ubu/chronoscape-game">GitHub</a>·
+          <a href="#session">A session</a>· <a href="#features">Features</a>·
+          <a href="#commands">Commands</a>· <a href="#why">Why</a>
+        </p>
+      </header>
+
+      <section id="session">
+        <h2><span class="n">01</span>Narrative in, game state out</h2>
+        <p class="lede">
+          The AI DM streams story with hidden mechanical tags — damage, healing, loot, conditions,
+          XP — and the engine applies them automatically. Flavor and rules, one stream.
+        </p>
+
+        <div class="terminal">
+          <div class="tbar">
+            <i class="dot"></i><i class="dot"></i><i class="dot"></i><span>chronoscape — party of 3</span>
+          </div>
+          <pre><span class="c b">KAEL:</span> <span class="m">I vault the bar and hurl my arc grenade at the drake.</span>
+
+<span class="d">/roll 1d20+7</span> <span class="a">→ 18</span> <span class="g">hit!</span>
+
+<span class="mg">DM:</span> <span class="m">The grenade arcs through neon haze and bursts against the</span>
+<span class="m">drake's scales in a lattice of blue lightning. It shrieks,</span>
+<span class="m">wings clipping a holo-sign that crashes down in sparks.</span>
+
+  <span class="d">[</span><span class="r">DAMAGE 24 lightning</span><span class="d">]</span> <span class="d">[</span><span class="a">CONDITION: stunned, 1 round</span><span class="d">]</span>
+  <span class="d">[</span><span class="g">XP +150</span><span class="d">]</span>
+
+  <span class="g">✓</span> <span class="d">combat tracker updated · initiative passes to</span> <span class="c b">SERAPHINE</span></pre>
+        </div>
+      </section>
+
+      <section id="features">
+        <h2><span class="n">02</span>What you get</h2>
+
+        <div class="grid">
+          <div class="card">
+            <h3><i>◆</i> AI Dungeon Master</h3>
+            <p>Streams narrative with mechanical tags that update game state — damage, healing, loot, conditions, combat, XP.</p>
+          </div>
+          <div class="card">
+            <h3><i>◆</i> Real multiplayer</h3>
+            <p>Real-time sessions over Socket.IO. Your whole party in one world, from browsers and terminals alike.</p>
+          </div>
+          <div class="card">
+            <h3><i>◆</i> Obsidian-powered lore</h3>
+            <p>Reads your campaign vault — NPCs, bestiary, factions, locations, items, random tables — and feeds ~14k tokens of world context to the DM.</p>
+          </div>
+          <div class="card">
+            <h3><i>◆</i> Full 5e mechanics</h3>
+            <p>Dice with advantage and modifiers, combat tracker with initiative, inventory, rests, leveling, lookups.</p>
+          </div>
+          <div class="card">
+            <h3><i>◆</i> Two clients</h3>
+            <p>A browser UI for the map-and-sheet crowd, and a terminal client for the ones who live in a shell.</p>
+          </div>
+          <div class="card">
+            <h3><i>◆</i> Character creation</h3>
+            <p>AI-guided conversational creation, or a manual 5-step flow with live class previews.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="commands">
+        <h2><span class="n">03</span>Commands</h2>
+        <p class="lede">Anything without a <code>/</code> goes straight to the DM as a player action.</p>
+
+        <table>
+          <thead>
+            <tr><th>Command</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>/roll XdY</code></td><td>Roll dice — advantage, disadvantage, modifiers</td></tr>
+            <tr><td><code>/sheet</code></td><td>View your character sheet</td></tr>
+            <tr><td><code>/inventory</code></td><td>View and manage items</td></tr>
+            <tr><td><code>/rest short|long</code></td><td>Take a rest</td></tr>
+            <tr><td><code>/combat</code></td><td>View combat state and initiative</td></tr>
+            <tr><td><code>/map</code></td><td>Show the world map</td></tr>
+            <tr><td><code>/lookup npc|location|faction &lt;name&gt;</code></td><td>Query the vault's lore</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="why">
+        <h2><span class="n">04</span>Why it exists</h2>
+        <p class="lede">The decisions worth knowing about, written down.</p>
+
+        <div class="reason">
+          <h3>The DM never cancels</h3>
+          <p>Scheduling kills more campaigns than dragons do. An AI DM means the party plays whenever three people are free.</p>
+        </div>
+        <div class="reason">
+          <h3>The vault is the source of truth</h3>
+          <p>World lore lives in Obsidian where it's pleasant to write — the engine reads it, so the DM actually knows your NPC's name.</p>
+        </div>
+        <div class="reason">
+          <h3>Mechanics stay honest</h3>
+          <p>The AI narrates; the engine calculates. Tags keep hit points, conditions and XP exact instead of vibes-based.</p>
+        </div>
+      </section>
+
+      <footer>
+        <p>Built by <a href="https://github.com/L-ubu">L-ubu</a> · roll for initiative</p>
+        <p><a href="https://github.com/L-ubu/chronoscape-game">github.com/L-ubu/chronoscape-game</a></p>
+      </footer>
+    </div>
+
+    <script>
+      const button = document.getElementById("copy");
+      button.addEventListener("click", async () => {
+        const command = "git clone https://github.com/L-ubu/chronoscape-game.git && cd chronoscape-game && npm install && npm start";
+        try {
+          await navigator.clipboard.writeText(command);
+        } catch {
+          const area = document.createElement("textarea");
+          area.value = command;
+          document.body.appendChild(area);
+          area.select();
+          document.execCommand("copy");
+          area.remove();
+        }
+        button.textContent = "Copied";
+        button.classList.add("done");
+        setTimeout(() => {
+          button.textContent = "Copy";
+          button.classList.remove("done");
+        }, 1800);
+      });
+    </script>
+  </body>
+</html>
